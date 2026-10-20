@@ -84,6 +84,7 @@ services:
     environment:
       API_DOMAIN: ${API_DOMAIN}
       SHOP_DOMAIN: ${SHOP_DOMAIN}
+      EXTRA_SHOP_DOMAINS: ${EXTRA_SHOP_DOMAINS:-}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddydata:/data
