@@ -1,8 +1,8 @@
 {
-  "name": "medusa-starter-default",
+  "name": "hnr-medusa-backend",
   "version": "0.0.1",
-  "description": "A starter for Medusa projects.",
-  "author": "Medusa (https://medusajs.com)",
+  "description": "Medusa backend for the H&R by Raza online store.",
+  "author": "Arrow",
   "license": "MIT",
   "keywords": [
     "sqlite",
@@ -13,22 +13,23 @@
     "medusa"
   ],
   "scripts": {
-    "build": "medusa build",
+    "build": "medusa build && node -e \"require('fs').cpSync('static', '.medusa/server/static', {recursive: true})\"",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "start": "medusa start",
+    "predeploy": "medusa db:migrate",
     "dev": "medusa develop",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
     "test:integration:modules": "TEST_TYPE=integration:modules NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
     "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit"
   },
   "dependencies": {
-    "@medusajs/admin-sdk": "2.16.0",
-    "@medusajs/cli": "2.16.0",
-    "@medusajs/framework": "2.16.0",
-    "@medusajs/medusa": "2.16.0"
+    "@medusajs/admin-sdk": "2.21.2",
+    "@medusajs/cli": "2.21.2",
+    "@medusajs/framework": "2.21.2",
+    "@medusajs/medusa": "2.21.2"
   },
   "devDependencies": {
-    "@medusajs/test-utils": "2.16.0",
+    "@medusajs/test-utils": "2.21.2",
     "@swc/core": "^1.7.28",
     "@swc/jest": "^0.2.36",
     "@types/jest": "^29.5.13",

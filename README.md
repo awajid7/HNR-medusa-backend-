@@ -1,78 +1,81 @@
-> ⚠️ This repository is now deprecated. Use the [dtc-starter](https://github.com/medusajs/dtc-starter) instead.
+# H&R by Raza store backend
 
-<p align="center">
-  <a href="https://www.medusajs.com">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/59018053/229103275-b5e482bb-4601-46e6-8142-244f531cebdb.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    <img alt="Medusa logo" src="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    </picture>
-  </a>
-</p>
-<h1 align="center">
-  Medusa
-</h1>
+Medusa v2 backend and admin for the H&R by Raza online store. The storefront lives in
+[HNR-clothing-storefront](https://github.com/awajid7/HNR-clothing-storefront).
 
-<h4 align="center">
-  <a href="https://docs.medusajs.com">Documentation</a> |
-  <a href="https://www.medusajs.com">Website</a>
-</h4>
+## What is set up
 
-<p align="center">
-  Building blocks for digital commerce
-</p>
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
-    <a href="https://www.producthunt.com/posts/medusa"><img src="https://img.shields.io/badge/Product%20Hunt-%231%20Product%20of%20the%20Day-%23DA552E" alt="Product Hunt"></a>
-  <a href="https://discord.gg/xpCwq3Kfn8">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord Chat" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=medusajs">
-    <img src="https://img.shields.io/twitter/follow/medusajs.svg?label=Follow%20@medusajs" alt="Follow @medusajs" />
-  </a>
-</p>
+- **Region:** Pakistan only, prices in PKR, tax-inclusive.
+- **Payments** (`src/modules/manual-payments`):
+  - `pp_cod_hnr`, cash on delivery collected by the courier.
+  - `pp_wallet-transfer_hnr`, JazzCash, Easypaisa or bank transfer. The customer is told
+    we will WhatsApp the account details after ordering.
+  
+  Both place the order as *authorized*. Capture the payment in the admin once the money
+  has been received (COD remittance from the courier, or the transfer arriving).
+- **Delivery:** from the Gulberg Studio stock location.
+  - Standard delivery across Pakistan, PKR 300, free from PKR 15,000.
+  - Express delivery in Lahore, PKR 500.
+  - Pickup from the Gulberg Studio, free.
+  
+  Couriers (PostEx, Leopards, TCS) are booked by hand from their portals for now; the
+  options use Medusa's manual fulfillment provider.
+- **Catalog:** `yarn seed` loads 17 products: the 13 current LAAM listings and the 4
+  pieces on hnrbyraza.com, with their photos in `static/catalog`. Stock is not tracked
+  (`manage_inventory: false`) because pieces are cut to order.
+- **Redis** is used for events, cache, locking and workflows when `REDIS_URL` is set.
+- **Files:** admin uploads go to local disk, or to S3/R2 when `S3_BUCKET` is set.
 
-## Compatibility
+## Run locally
 
-This starter is compatible with versions >= 2 of `@medusajs/medusa`. 
+Requires Node 20+, Postgres and Redis.
 
-## Getting Started
+```bash
+cp .env.template .env
+createdb medusa_hnr
+yarn install
+npx medusa db:migrate
+yarn seed                      # prints the storefront publishable key
+npx medusa user -e you@example.com -p <password>
+yarn dev                       # API on :9000, admin on :9000/app
+```
 
-Visit the [Quickstart Guide](https://docs.medusajs.com/learn/installation) to set up a server.
+## Deploy on Railway
 
-Visit the [Docs](https://docs.medusajs.com/learn/installation#get-started) to learn more about our system requirements.
+1. In Railway, create a project and add **Postgres** and **Redis**.
+2. Add a service from this GitHub repo. `railway.json` sets the build and start commands
+   (build, then migrate and start from `.medusa/server`).
+3. Under the service's **Networking**, generate a domain (for example
+   `hnr-backend.up.railway.app`).
+4. Set the service variables:
 
-## What is Medusa
+   | Variable | Value |
+   | --- | --- |
+   | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
+   | `REDIS_URL` | `${{Redis.REDIS_URL}}` |
+   | `MEDUSA_BACKEND_URL` | `https://<backend domain>` |
+   | `STORE_CORS` | `https://<storefront domain>` |
+   | `ADMIN_CORS` | `https://<backend domain>` |
+   | `AUTH_CORS` | `https://<backend domain>,https://<storefront domain>` |
+   | `JWT_SECRET`, `COOKIE_SECRET` | long random strings |
+   | `NODE_ENV` | `production` |
 
-Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
+5. After the first successful deploy, seed the store and create an admin user from the
+   service shell (`railway ssh`):
 
-Learn more about [Medusa’s architecture](https://docs.medusajs.com/learn/introduction/architecture) and [commerce modules](https://docs.medusajs.com/learn/fundamentals/modules/commerce-modules) in the Docs.
+   ```bash
+   cd .medusa/server
+   npx medusa exec ./src/scripts/seed.js
+   npx medusa user -e <email> -p <password>
+   ```
 
-## Build with AI Agents
+   The seed log prints the publishable API key the storefront needs. It is also in the
+   admin under Settings → Publishable API Keys.
 
-### Claude Code Plugin
+## Next steps
 
-If you use AI agents like Claude Code, check out the [medusa-dev Claude Code plugin](https://github.com/medusajs/medusa-claude-plugins).
-
-### Other Agents
-
-If you use AI agents other than Claude Code, copy the [skills directory](https://github.com/medusajs/medusa-claude-plugins/tree/main/plugins/medusa-dev/skills) into your agent's relevant `skills` directory.
-
-### MCP Server
-
-You can also add the MCP server `https://docs.medusajs.com/mcp` to your AI agents to answer questions related to Medusa. The `medusa-dev` Claude Code plugin includes this MCP server by default.
-
-## Community & Contributions
-
-The community and core team are available in [GitHub Discussions](https://github.com/medusajs/medusa/discussions), where you can ask for support, discuss roadmap, and share ideas.
-
-Join our [Discord server](https://discord.com/invite/medusajs) to meet other community members.
-
-## Other channels
-
-- [GitHub Issues](https://github.com/medusajs/medusa/issues)
-- [Twitter](https://twitter.com/medusajs)
-- [LinkedIn](https://www.linkedin.com/company/medusajs)
-- [Medusa Blog](https://medusajs.com/blog/)
+- Courier integration (PostEx or Leopards API) as a fulfillment provider, to book
+  shipments and print airway bills from the admin.
+- Online JazzCash / Easypaisa checkout once H&R has merchant accounts.
+- Order emails or WhatsApp notifications.
+- Cloudflare R2 for product photos uploaded in the admin.
