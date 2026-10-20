@@ -40,6 +40,12 @@ const redisModules = redisUrl
 export default defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    // Medusa uses SSL for the database in production; a Postgres on the same
+    // server (deploy/docker-compose.yml) doesn't need it.
+    databaseDriverOptions:
+      process.env.DATABASE_SSL === "false"
+        ? { connection: { ssl: false } }
+        : undefined,
     redisUrl,
     workerMode: process.env.MEDUSA_WORKER_MODE as
       | "shared"
@@ -94,7 +100,11 @@ export default defineConfig({
               {
                 resolve: "@medusajs/medusa/file-local",
                 id: "local",
-                options: { backend_url: `${backendUrl}/static` },
+                options: {
+                  // Kept apart from static/catalog so a volume can hold uploads
+                  upload_dir: "static/uploads",
+                  backend_url: `${backendUrl}/static/uploads`,
+                },
               },
             ],
       },

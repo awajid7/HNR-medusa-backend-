@@ -23,4 +23,7 @@ build
 !.yarn/sdks
 !.yarn/versions
 
-.medusadump.rdb
+.medusa
+dump.rdb
+deploy/.env
+deploy/backups

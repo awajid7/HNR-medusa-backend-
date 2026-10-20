@@ -1,0 +1,10 @@
+# Caddy fetches and renews HTTPS certificates automatically.
+{$API_DOMAIN} {
+	encode gzip
+	reverse_proxy backend:9000
+}
+
+{$SHOP_DOMAIN} {
+	encode gzip
+	reverse_proxy storefront:8000
+}

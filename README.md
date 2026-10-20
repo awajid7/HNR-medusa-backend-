@@ -40,7 +40,12 @@ npx medusa user -e you@example.com -p <password>
 yarn dev                       # API on :9000, admin on :9000/app
 ```
 
-## Deploy on Railway
+## Free hosting (recommended)
+
+See [deploy/README.md](deploy/README.md): the whole store on one Oracle Cloud Always Free
+server with Docker Compose (Postgres, Redis, backend, storefront, automatic HTTPS).
+
+## Deploy on Railway (paid alternative)
 
 1. In Railway, create a project and add **Postgres** and **Redis**.
 2. Add a service from this GitHub repo. `railway.json` sets the build and start commands

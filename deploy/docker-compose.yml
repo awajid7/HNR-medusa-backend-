@@ -1,0 +1,92 @@
+# Runs the whole H&R by Raza store on one server:
+# Postgres, Redis, Medusa backend + admin, Next.js storefront, and Caddy for HTTPS.
+# Expects the storefront repo cloned next to this one (../../HNR-clothing-storefront).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: medusa
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: medusa
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medusa"]
+      interval: 10s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+  backend:
+    build:
+      context: ..
+      args:
+        MEDUSA_BACKEND_URL: https://${API_DOMAIN}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://medusa:${POSTGRES_PASSWORD}@postgres:5432/medusa
+      DATABASE_SSL: "false"
+      REDIS_URL: redis://redis:6379
+      MEDUSA_BACKEND_URL: https://${API_DOMAIN}
+      STORE_CORS: https://${SHOP_DOMAIN}
+      ADMIN_CORS: https://${API_DOMAIN}
+      AUTH_CORS: https://${API_DOMAIN},https://${SHOP_DOMAIN}
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+    volumes:
+      # Images uploaded in the admin
+      - uploads:/app/.medusa/server/static/uploads
+    ports:
+      # Only reachable from the server itself (the storefront build uses it)
+      - "127.0.0.1:9000:9000"
+
+  storefront:
+    build:
+      context: ../../HNR-clothing-storefront
+      # The build prerenders product pages, so it talks to the backend on the host
+      network: host
+      args:
+        MEDUSA_BACKEND_URL: http://localhost:9000
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${PUBLISHABLE_KEY}
+        NEXT_PUBLIC_BASE_URL: https://${SHOP_DOMAIN}
+        NEXT_PUBLIC_IMAGE_HOST: https://${API_DOMAIN}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      MEDUSA_BACKEND_URL: http://backend:9000
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${PUBLISHABLE_KEY}
+      NEXT_PUBLIC_BASE_URL: https://${SHOP_DOMAIN}
+      NEXT_PUBLIC_DEFAULT_REGION: pk
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+    profiles: ["storefront"]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+      SHOP_DOMAIN: ${SHOP_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+
+volumes:
+  pgdata:
+  redisdata:
+  uploads:
+  caddydata:
