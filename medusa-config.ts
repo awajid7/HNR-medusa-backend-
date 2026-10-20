@@ -37,6 +37,32 @@ const redisModules = redisUrl
     ]
   : []
 
+// Order emails go through Resend when RESEND_API_KEY is set; otherwise they
+// are only logged. The local provider keeps the admin's notification feed.
+const notificationProviders = [
+  {
+    resolve: "@medusajs/medusa/notification-local",
+    id: "local",
+    options: {
+      channels: process.env.RESEND_API_KEY ? ["feed"] : ["feed", "email"],
+    },
+  },
+  ...(process.env.RESEND_API_KEY
+    ? [
+        {
+          resolve: "./src/modules/resend",
+          id: "resend",
+          options: {
+            channels: ["email"],
+            api_key: process.env.RESEND_API_KEY,
+            from: process.env.RESEND_FROM || "H&R by Raza <order@hnrbyraza.com>",
+            reply_to: process.env.ORDER_NOTIFY_EMAIL || "sales@hnrbyraza.com",
+          },
+        },
+      ]
+    : []),
+]
+
 export default defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
@@ -77,6 +103,10 @@ export default defineConfig({
           },
         ],
       },
+    },
+    {
+      resolve: "@medusajs/medusa/notification",
+      options: { providers: notificationProviders },
     },
     {
       resolve: "@medusajs/medusa/file",

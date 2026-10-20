@@ -44,6 +44,11 @@ services:
       AUTH_CORS: https://${API_DOMAIN},https://${SHOP_DOMAIN}
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECRET: ${COOKIE_SECRET}
+      # Order emails (customer confirmation + copy to the shop) via Resend
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-H&R by Raza <order@hnrbyraza.com>}
+      ORDER_NOTIFY_EMAIL: ${ORDER_NOTIFY_EMAIL:-sales@hnrbyraza.com}
+      STORE_URL: https://${SHOP_DOMAIN}
     volumes:
       # Images uploaded in the admin
       - uploads:/app/.medusa/server/static/uploads
