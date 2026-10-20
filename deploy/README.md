@@ -136,6 +136,19 @@ For example, from the sslip.io names to `hnrbyraza.com` (store) and `api.hnrbyra
 
 The Caddyfile also redirects the old site's `/collections`, `/about` and `/book` pages.
 
+## Order emails
+
+Each order emails a confirmation to the customer and a copy to the shop
+(`ORDER_NOTIFY_EMAIL`, default sales@hnrbyraza.com), sent from order@hnrbyraza.com through
+[Resend](https://resend.com) (free plan: 3,000 emails a month, 100 a day).
+
+1. Sign up at resend.com → Domains → Add domain → `hnrbyraza.com`.
+2. Add the DNS records Resend lists in Cloudflare (a `resend._domainkey` TXT record and
+   MX/TXT records on the `send` subdomain), all **DNS only**. They don't touch the existing
+   Cloudflare Email Routing records on the root domain. Wait until Resend says Verified.
+3. API Keys → Create (Sending access). Put it in `deploy/.env` as `RESEND_API_KEY=re_...`.
+4. `docker compose up -d backend` (no rebuild needed) and place a test order.
+
 ## Updating
 
 ```bash
