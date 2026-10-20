@@ -67,6 +67,10 @@ export default defineConfig({
   modules: [
     ...redisModules,
     {
+      // Editable storefront text and fonts (admin: Site content)
+      resolve: "./src/modules/site-content",
+    },
+    {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
