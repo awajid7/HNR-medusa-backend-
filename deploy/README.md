@@ -114,6 +114,28 @@ crontab -e
 Dumps are kept for 14 days in `deploy/backups/`. Copy them off the server now and then
 (for example to Google Drive).
 
+## Moving to a new domain
+
+For example, from the sslip.io names to `hnrbyraza.com` (store) and `api.hnrbyraza.com`:
+
+1. DNS (Cloudflare for hnrbyraza.com): remove the old records for `@` and `www`, then add
+   A records `@`, `www` and `api` pointing at the server IP. Set them to **DNS only**
+   (grey cloud) so Caddy can get its certificates.
+2. In `deploy/.env` set `SHOP_DOMAIN=hnrbyraza.com`, `EXTRA_SHOP_DOMAINS=www.hnrbyraza.com`
+   and `API_DOMAIN=api.hnrbyraza.com`.
+3. Point the product image URLs at the new API address (replace the old address):
+
+   ```bash
+   docker compose exec postgres psql -U medusa -d medusa -c \
+     "update image set url = replace(url, 'https://OLD_API', 'https://api.hnrbyraza.com');
+      update product set thumbnail = replace(thumbnail, 'https://OLD_API', 'https://api.hnrbyraza.com');"
+   ```
+
+4. Rebuild and restart everything: `docker compose up -d --build` (see the storefront note
+   under Updating if its build is refused).
+
+The Caddyfile also redirects the old site's `/collections`, `/about` and `/book` pages.
+
 ## Updating
 
 ```bash

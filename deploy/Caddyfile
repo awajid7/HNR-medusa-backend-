@@ -4,7 +4,16 @@
 	reverse_proxy backend:9000
 }
 
-{$SHOP_DOMAIN} {
+# EXTRA_SHOP_DOMAINS (e.g. www.hnrbyraza.com) redirect to the main store address.
+{$SHOP_DOMAIN} {$EXTRA_SHOP_DOMAINS} {
+	@alias not host {$SHOP_DOMAIN}
+	redir @alias https://{$SHOP_DOMAIN}{uri} permanent
+
+	# Pages from the old hnrbyraza.com site
+	redir /collections /pk/store permanent
+	redir /about /pk permanent
+	redir /book https://wa.me/923223558656 302
+
 	encode gzip
 	reverse_proxy storefront:8000
 }
