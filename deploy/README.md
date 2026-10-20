@@ -23,7 +23,8 @@ What you end up with:
 
 Compute → Instances → Create instance:
 
-- Image: **Canonical Ubuntu 24.04**
+- Image: **Canonical Ubuntu 24.04** (Oracle Linux 9 also works: the user is `opc`
+  instead of `ubuntu`, and see the firewall note in step 3)
 - Shape: **VM.Standard.A1.Flex** (Ampere, Arm), **2 OCPU, 12 GB memory** (Always Free)
 - Networking: keep "Assign a public IPv4 address"
 - SSH keys: upload your public key (or let Oracle generate one and download it)
@@ -43,6 +44,13 @@ Note the server's **public IP**.
    sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
    sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
    sudo netfilter-persistent save
+   ```
+
+   On Oracle Linux use firewalld instead:
+
+   ```bash
+   sudo firewall-cmd --permanent --add-service=http --add-service=https
+   sudo firewall-cmd --reload
    ```
 
 ## 4. Install Docker and get the code
@@ -112,6 +120,17 @@ Dumps are kept for 14 days in `deploy/backups/`. Copy them off the server now an
 cd ~/HNR-medusa-backend- && git pull
 cd ~/HNR-clothing-storefront && git pull
 cd ~/HNR-medusa-backend-/deploy && docker compose up -d --build
+```
+
+If the storefront build is refused with an error about `network.host` or `fs.read`
+(newer Docker versions with Bake), build it this way instead:
+
+```bash
+cd ~/HNR-medusa-backend-/deploy
+docker compose build --print storefront > /tmp/bake.json
+docker buildx bake --allow=network.host --allow=fs.read=$HOME/HNR-clothing-storefront \
+  -f /tmp/bake.json storefront
+docker compose up -d --no-build storefront
 ```
 
 The storefront prerenders product pages at build time; new products added in the admin
