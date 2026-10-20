@@ -56,6 +56,9 @@ services:
       context: ../../HNR-clothing-storefront
       # The build prerenders product pages, so it talks to the backend on the host
       network: host
+      # Newer Docker refuses host networking during builds unless it's allowed
+      entitlements:
+        - network.host
       args:
         MEDUSA_BACKEND_URL: http://localhost:9000
         NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${PUBLISHABLE_KEY}
