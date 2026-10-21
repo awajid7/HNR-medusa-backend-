@@ -165,7 +165,7 @@ const FieldInput = ({
           </Select.Content>
         </Select>
       ) : field.type === "textarea" ? (
-        <Textarea id={id} value={value} rows={3} onChange={(e) => onChange(e.target.value)} />
+        <Textarea id={id} value={value} rows={field.rows ?? 3} onChange={(e) => onChange(e.target.value)} />
       ) : (
         <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} />
       )}
