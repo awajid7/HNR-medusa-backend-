@@ -139,7 +139,7 @@ export const SITE_CONTENT_SECTIONS: SiteContentSection[] = [
         default: "+92 322 3558656",
         help: "Used by every WhatsApp button and link.",
       },
-      { key: "contact.email", label: "Email", default: "sales@heshamandraza.com" },
+      { key: "contact.email", label: "Email", default: "sales@hnrbyraza.com" },
       { key: "contact.instagram", label: "Instagram link", default: "https://www.instagram.com/hnrbyraza/" },
       { key: "contact.facebook", label: "Facebook link", default: "https://www.facebook.com/hnrbyraza/" },
       { key: "footer.tagline", label: "Tagline under the logo", default: "Elegance in every stitch." },
