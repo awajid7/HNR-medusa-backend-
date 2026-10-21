@@ -1,10 +1,19 @@
 /**
  * The storefront text and fonts that can be edited in the admin under
- * "Site content". Keep this file free of imports: the admin page uses it too.
+ * "Site content". Keep this file free of imports other than ./policies: the admin page uses it too.
  *
  * The storefront keeps the same defaults so it still renders if the backend is
  * unreachable (src/lib/data/site-content.ts in the storefront repo).
  */
+
+import {
+  POLICY_FORMAT_HELP,
+  PRIVACY_POLICY,
+  RETURNS_POLICY,
+  SHIPPING_POLICY,
+  SIZE_GUIDE,
+  TERMS,
+} from "./policies"
 
 export type SiteContentField = {
   key: string
@@ -14,6 +23,10 @@ export type SiteContentField = {
   /** "text" is one line, "textarea" keeps line breaks, "font" is a select */
   type?: "text" | "textarea" | "font"
   options?: { value: string; label: string }[]
+  /** Longest value accepted, 2000 characters if not set */
+  maxLength?: number
+  /** Height of a textarea in lines */
+  rows?: number
 }
 
 export type SiteContentSection = {
@@ -150,6 +163,39 @@ export const SITE_CONTENT_SECTIONS: SiteContentSection[] = [
         help: "The © and current year are added automatically.",
       },
       { key: "footer.note", label: "Bottom right note", default: "Cash on delivery across Pakistan" },
+    ],
+  },
+  {
+    id: "policies",
+    title: "Policy pages and size guide",
+    description:
+      "Linked in the footer. Payment providers, Google and Meta check that these pages exist.",
+    fields: [
+      {
+        key: "policies.updated",
+        label: "Last updated",
+        default: "21 October 2026",
+        help: "Shown at the top of each policy. Change it when you edit a policy.",
+      },
+      ...(
+        [
+          ["policies.shipping", "Shipping and delivery", SHIPPING_POLICY],
+          ["policies.returns", "Returns and exchanges", RETURNS_POLICY],
+          ["policies.terms", "Terms and conditions", TERMS],
+          ["policies.privacy", "Privacy policy", PRIVACY_POLICY],
+          ["policies.size_guide", "Size guide", SIZE_GUIDE],
+        ] as const
+      ).map(
+        ([key, label, text]): SiteContentField => ({
+          key,
+          label,
+          type: "textarea",
+          default: text,
+          maxLength: 20000,
+          rows: 16,
+          help: POLICY_FORMAT_HELP,
+        })
+      ),
     ],
   },
   {

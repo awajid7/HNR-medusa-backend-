@@ -26,10 +26,11 @@ export async function POST(
       continue
     }
     const value = input[field.key]
-    if (typeof value !== "string" || value.length > MAX_LENGTH) {
+    const maxLength = field.maxLength ?? MAX_LENGTH
+    if (typeof value !== "string" || value.length > maxLength) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
-        `${field.label} must be text of at most ${MAX_LENGTH} characters`
+        `${field.label} must be text of at most ${maxLength} characters`
       )
     }
     if (field.type === "font" && !field.options?.some((o) => o.value === value)) {
